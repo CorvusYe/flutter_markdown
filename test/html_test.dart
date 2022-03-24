@@ -57,7 +57,9 @@ void defineTests() {
       (WidgetTester tester) async {
         await tester.pumpWidget(
           boilerplate(
-            const Markdown(data: '&amp; &copy; &#60; &#x0007B;'),
+            const Markdown(data: '''```math
+p(y=1|x,w) = (h_w(x))^1 = (h_w(x))^1(1-h_w(x))^0
+```'''),
           ),
         );
         expectTextStrings(

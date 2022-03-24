@@ -5,6 +5,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:catex/catex.dart';
+import 'package:flutter_mermaid/flutter_mermaid.dart';
+import './mermaid/mermaid.dart';
 
 import '_functions_io.dart' if (dart.library.html) '_functions_web.dart';
 import 'style_sheet.dart';
@@ -106,6 +109,9 @@ class MarkdownBuilder implements md.NodeVisitor {
     this.onTapText,
   });
 
+  static Map<String, Widget> $refs = <String, Widget>{};
+  static Widget Function(String)? $refBuild;
+
   /// A delegate that controls how link and `pre` elements behave.
   final MarkdownBuilderDelegate delegate;
 
@@ -180,6 +186,7 @@ class MarkdownBuilder implements md.NodeVisitor {
 
   @override
   bool visitElementBefore(md.Element element) {
+    // print(element.attributes['class']);
     final String tag = element.tag;
     if (_currentBlockTag == null) _currentBlockTag = tag;
 
@@ -225,7 +232,6 @@ class MarkdownBuilder implements md.NodeVisitor {
           delegate.createLink(text, destination, title),
         );
       }
-
       _addParentInlineIfNeeded(_blocks.last.tag);
 
       // The Markdown parser passes empty table data tags for blank
@@ -258,7 +264,7 @@ class MarkdownBuilder implements md.NodeVisitor {
   }
 
   @override
-  void visitText(md.Text text) {
+  void visitText(md.Text text, {md.Node? parent}) {
     // Don't allow text directly under the root.
     if (_blocks.last.tag == null) return;
 
@@ -293,13 +299,20 @@ class MarkdownBuilder implements md.NodeVisitor {
       child = builders[_blocks.last.tag!]!
           .visitText(text, styleSheet.styles[_blocks.last.tag!]);
     } else if (_blocks.last.tag == 'pre') {
-      child = Scrollbar(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: styleSheet.codeblockPadding,
-          child: _buildRichText(delegate.formatText(styleSheet, text.text)),
-        ),
-      );
+      child = isRef(parent)
+          ? _fromRef(text)
+          : isCustom(parent)
+              ? _buildCustomWidget((parent as md.Element), text)
+              : isMermaid(parent, text.text)
+                  ? _buildMermaid(text)
+                  : Scrollbar(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: styleSheet.codeblockPadding,
+                        child: _buildRichText(
+                            delegate.formatText(styleSheet, text.text)),
+                      ),
+                    );
     } else {
       child = _buildRichText(
         TextSpan(
@@ -315,6 +328,50 @@ class MarkdownBuilder implements md.NodeVisitor {
     if (child != null) {
       _inlines.last.children.add(child);
     }
+  }
+
+  bool isCustom(dynamic parent) {
+    return parent != null &&
+        parent is md.Element &&
+        parent.attributes['class'] == 'language-math';
+  }
+
+  bool isRef(dynamic parent) {
+    return parent != null &&
+        parent is md.Element &&
+        parent.attributes['class'] == 'language-ref';
+  }
+
+  Widget _buildCustomWidget(md.Element parent, md.Text text) {
+    List<String> strs = text.text.split(RegExp('\n{2,}'));
+    List<Widget> formulas = List<Widget>.generate(
+        strs.length,
+        (index) => Align(
+            alignment: Alignment.bottomCenter,
+            child: Scrollbar(
+                child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: CaTeX(strs[index])))));
+    return Column(children: formulas);
+  }
+
+  bool isMermaid(dynamic parent, String text) {
+    bool isCode = parent != null &&
+        parent is md.Element &&
+        parent.attributes['class'] == null;
+    return isCode && detectType(text) != '';
+  }
+
+  Widget _buildMermaid(md.Text text) {
+    return Mermaid(content: text.text);
+  }
+
+  Widget _fromRef(md.Text text) {
+    // print(
+    //     '\n\t\ttext: ${text.text},\n\t\trefs : ${MarkdownBuilder.$refs[text.text.trim()]}\n\t\t${MarkdownBuilder.$refs.keys}');
+    return MarkdownBuilder.$refs[text.text.trim()] ??
+        $refBuild?.call(text.text.trim()) ??
+        Container();
   }
 
   @override
