@@ -12,8 +12,7 @@ dependencies:
     git: 
       url: https://github.com/CorvusYe/markdown
   flutter_mermaid:
-    git: 
-      url: https://gitee.com/disi_ltd/flutter_marmaid
+    path: ../flutter_mermaid
 
   flutter_svg: ^0.22.0
   meta: ^1.3.0
