@@ -119,7 +119,19 @@ Markdown(
       md.ExtensionSet.gitHubFlavored.blockSyntaxes,
       [md.EmojiSyntax(), ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes],
     ),
+
+    // New Feature
+    namedCodeBlockBuilder: { 
+      'widget', 
+      (content) => Text(content), // you can do more things in code block.
+    }
 )
+```
+
+```
+  ```widget
+  This is some text to be parse. Up to you.
+  ```
 ```
 
 ## Image Support

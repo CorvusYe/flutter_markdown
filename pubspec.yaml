@@ -8,16 +8,14 @@ version: 0.6.1
 dependencies:
   flutter:
     sdk: flutter
-  markdown:
-    git: 
-      url: https://github.com/CorvusYe/markdown
-  flutter_mermaid:
-    path: ../flutter_mermaid
+  markdown: ^4.0.1
+      
 
   flutter_svg: ^0.22.0
   meta: ^1.3.0
   path: ^1.8.0
   catex: ^0.0.1+8
+  charcode: ^1.3.1
 
 dev_dependencies:
   flutter_test:
