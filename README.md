@@ -129,9 +129,9 @@ Markdown(
 ```
 
 ```
-  ```widget
-  This is some text to be parse. Up to you.
-  ```
+```widget  
+This is some text to be parse. Up to you.
+```　
 ```
 
 ## Image Support

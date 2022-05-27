@@ -33,6 +33,7 @@ class MarkdownStyleSheet {
     this.tableHeadAlign,
     this.tableBorder,
     this.tableColumnWidth,
+    this.customTableColumnWidths,
     this.tableCellsPadding,
     this.tableCellsDecoration,
     this.blockquotePadding,
@@ -84,7 +85,7 @@ class MarkdownStyleSheet {
       code: theme.textTheme.bodyText2!.copyWith(
         backgroundColor: theme.cardTheme.color ?? theme.cardColor,
         fontFamily: "monospace",
-        // fontSize: theme.textTheme.bodyText2!.fontSize! * 0.85,
+        fontSize: theme.textTheme.bodyText2!.fontSize! * 0.85,
       ),
       h1: theme.textTheme.headline5,
       h2: theme.textTheme.headline6,
@@ -117,7 +118,7 @@ class MarkdownStyleSheet {
       blockquotePadding: const EdgeInsets.all(8.0),
       blockquoteDecoration: BoxDecoration(
         color: Colors.blue.shade100,
-        // borderRadius: BorderRadius.circular(2.0),
+        borderRadius: BorderRadius.circular(2.0),
       ),
       codeblockPadding: const EdgeInsets.all(8.0),
       codeblockDecoration: BoxDecoration(
@@ -150,7 +151,7 @@ class MarkdownStyleSheet {
             ? CupertinoColors.systemGrey6.darkColor
             : CupertinoColors.systemGrey6.color,
         fontFamily: "monospace",
-        // fontSize: theme.textTheme.textStyle.fontSize! * 0.85,
+        fontSize: theme.textTheme.textStyle.fontSize! * 0.85,
       ),
       h1: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
@@ -250,7 +251,7 @@ class MarkdownStyleSheet {
       code: theme.textTheme.bodyText2!.copyWith(
         backgroundColor: theme.cardTheme.color ?? theme.cardColor,
         fontFamily: "monospace",
-        // fontSize: theme.textTheme.bodyText2!.fontSize! * 0.85,
+        fontSize: theme.textTheme.bodyText2!.fontSize! * 0.85,
       ),
       h1: theme.textTheme.headline2,
       h2: theme.textTheme.headline3,
@@ -517,6 +518,9 @@ class MarkdownStyleSheet {
 
   /// The [TableColumnWidth] to use for `th` and `td` elements.
   final TableColumnWidth? tableColumnWidth;
+
+  /// The [TableColumnWidth] to use for `th` and `td` elements.
+  final Map<int, TableColumnWidth>? customTableColumnWidths;
 
   /// The padding to use for `th` and `td` elements.
   final EdgeInsets? tableCellsPadding;
