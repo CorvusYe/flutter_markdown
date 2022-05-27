@@ -33,6 +33,7 @@ class MarkdownStyleSheet {
     this.tableHeadAlign,
     this.tableBorder,
     this.tableColumnWidth,
+    this.customTableColumnWidths,
     this.tableCellsPadding,
     this.tableCellsDecoration,
     this.blockquotePadding,
@@ -517,6 +518,9 @@ class MarkdownStyleSheet {
 
   /// The [TableColumnWidth] to use for `th` and `td` elements.
   final TableColumnWidth? tableColumnWidth;
+
+  /// The [TableColumnWidth] to use for `th` and `td` elements.
+  final Map<int, TableColumnWidth>? customTableColumnWidths;
 
   /// The padding to use for `th` and `td` elements.
   final EdgeInsets? tableCellsPadding;
