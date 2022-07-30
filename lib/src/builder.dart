@@ -104,7 +104,10 @@ class MarkdownBuilder implements md.NodeVisitor {
     required this.listItemCrossAxisAlignment,
     this.fitContent = false,
     this.onTapText,
+    this.namedCodeBlockBuilder,
   });
+
+  late Map<String, Function(String)>? namedCodeBlockBuilder;
 
   /// A delegate that controls how link and `pre` elements behave.
   final MarkdownBuilderDelegate delegate;
@@ -180,6 +183,7 @@ class MarkdownBuilder implements md.NodeVisitor {
 
   @override
   bool visitElementBefore(md.Element element) {
+    // print(element.attributes['class']);
     final String tag = element.tag;
     if (_currentBlockTag == null) _currentBlockTag = tag;
 
@@ -225,7 +229,6 @@ class MarkdownBuilder implements md.NodeVisitor {
           delegate.createLink(text, destination, title),
         );
       }
-
       _addParentInlineIfNeeded(_blocks.last.tag);
 
       // The Markdown parser passes empty table data tags for blank
@@ -257,64 +260,22 @@ class MarkdownBuilder implements md.NodeVisitor {
             : "");
   }
 
-  @override
-  void visitText(md.Text text) {
-    // Don't allow text directly under the root.
-    if (_blocks.last.tag == null) return;
+  // @override
+  void visitText(md.Text text, {md.Node? parent}) {
+    if (_blocks.last.tag == null) // Don't allow text directly under the root.
+      return;
 
     _addParentInlineIfNeeded(_blocks.last.tag);
 
-    // Define trim text function to remove spaces from text elements in
-    // accordance with Markdown specifications.
-    final trimText = (String text) {
-      // The leading spaces pattern is used to identify spaces
-      // at the beginning of a line of text.
-      final _leadingSpacesPattern = RegExp(r'^ *');
+    final TextSpan span = _blocks.last.tag == 'pre'
+        ? delegate.formatText(styleSheet, text.text)
+        : new TextSpan(
+            style: _inlines.last.style,
+            text: text.text,
+            recognizer: _linkHandlers.isNotEmpty ? _linkHandlers.last : null,
+          );
 
-      // The soft line break pattern is used to identify the spaces at the end of a
-      // line of text and the leading spaces in the immediately following the line
-      // of text. These spaces are removed in accordance with the Markdown
-      // specification on soft line breaks when lines of text are joined.
-      final _softLineBreakPattern = RegExp(r' ?\n *');
-
-      // Leading spaces following a hard line break are ignored.
-      // https://github.github.com/gfm/#example-657
-      if (_lastTag == 'br') {
-        text = text.replaceAll(_leadingSpacesPattern, '');
-      }
-
-      // Spaces at end of the line and beginning of the next line are removed.
-      // https://github.github.com/gfm/#example-670
-      return text.replaceAll(_softLineBreakPattern, ' ');
-    };
-
-    Widget? child;
-    if (_blocks.isNotEmpty && builders.containsKey(_blocks.last.tag)) {
-      child = builders[_blocks.last.tag!]!
-          .visitText(text, styleSheet.styles[_blocks.last.tag!]);
-    } else if (_blocks.last.tag == 'pre') {
-      child = Scrollbar(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: styleSheet.codeblockPadding,
-          child: _buildRichText(delegate.formatText(styleSheet, text.text)),
-        ),
-      );
-    } else {
-      child = _buildRichText(
-        TextSpan(
-          style: _isInBlockquote
-              ? styleSheet.blockquote!.merge(_inlines.last.style)
-              : _inlines.last.style,
-          text: _isInBlockquote ? text.text : trimText(text.text),
-          recognizer: _linkHandlers.isNotEmpty ? _linkHandlers.last : null,
-        ),
-        textAlign: _textAlignForBlockTag(_currentBlockTag),
-      );
-    }
-    if (child != null) {
-      _inlines.last.children.add(child);
-    }
+    _inlines.last.children.add(new RichText(text: span));
   }
 
   @override
@@ -384,18 +345,36 @@ class MarkdownBuilder implements md.NodeVisitor {
         );
       } else if (tag == 'blockquote') {
         _isInBlockquote = false;
-        child = DecoratedBox(
-          decoration: styleSheet.blockquoteDecoration!,
-          child: Padding(
-            padding: styleSheet.blockquotePadding!,
-            child: child,
+        child = FractionallySizedBox(
+          widthFactor: 1.0,
+          child: Container(
+            decoration: styleSheet.blockquoteDecoration!,
+            child: Padding(
+              padding: styleSheet.blockquotePadding!,
+              child: child,
+            ),
           ),
         );
       } else if (tag == 'pre') {
-        child = DecoratedBox(
-          decoration: styleSheet.codeblockDecoration!,
-          child: child,
-        );
+        var firstChild = element.children?.first;
+        var useCustom = false;
+        if (firstChild is md.Element) {
+          var blockName =
+              firstChild.attributes['class']?.replaceFirst('language-', '');
+          var customBlock = namedCodeBlockBuilder?[blockName]
+              ?.call(firstChild.textContent.trim());
+          if (customBlock != null) {
+            useCustom = true;
+          }
+          child = customBlock ?? null;
+        }
+
+        if (!useCustom) {
+          child = DecoratedBox(
+            decoration: styleSheet.codeblockDecoration!,
+            child: child,
+          );
+        }
       } else if (tag == 'hr') {
         child = Container(decoration: styleSheet.horizontalRuleDecoration);
       }

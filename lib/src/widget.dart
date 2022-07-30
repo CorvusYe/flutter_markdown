@@ -4,11 +4,13 @@
 
 import 'dart:convert';
 
+import 'package:charcode/charcode.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'package:markdown/markdown.dart';
 import 'package:meta/meta.dart';
 
 import '_functions_io.dart' if (dart.library.html) '_functions_web.dart';
@@ -154,7 +156,10 @@ abstract class MarkdownWidget extends StatefulWidget {
     this.fitContent = false,
     this.listItemCrossAxisAlignment =
         MarkdownListItemCrossAxisAlignment.baseline,
+    this.namedCodeBlockBuilder,
   }) : super(key: key);
+
+  final Map<String, Function(String)>? namedCodeBlockBuilder;
 
   /// The Markdown to display.
   final String data;
@@ -299,6 +304,7 @@ class _MarkdownWidgetState extends State<MarkdownWidget>
       fitContent: widget.fitContent,
       listItemCrossAxisAlignment: widget.listItemCrossAxisAlignment,
       onTapText: widget.onTapText,
+      namedCodeBlockBuilder: widget.namedCodeBlockBuilder,
     );
 
     _children = builder.build(astNodes);
@@ -369,6 +375,7 @@ class MarkdownBody extends MarkdownWidget {
         MarkdownListItemCrossAxisAlignment.baseline,
     this.shrinkWrap = true,
     this.fitContent = true,
+    Map<String, Function(String)>? namedCodeBlockBuilder,
   }) : super(
           key: key,
           data: data,
@@ -387,6 +394,7 @@ class MarkdownBody extends MarkdownWidget {
           builders: builders,
           listItemCrossAxisAlignment: listItemCrossAxisAlignment,
           bulletBuilder: bulletBuilder,
+          namedCodeBlockBuilder: namedCodeBlockBuilder,
         );
 
   /// See [ScrollView.shrinkWrap]
