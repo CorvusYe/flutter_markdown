@@ -34,14 +34,14 @@ class DemoCard extends StatelessWidget {
                   children: [
                     Text(
                       widget.title,
-                      style: Theme.of(context).primaryTextTheme.headline5,
+                      style: Theme.of(context).primaryTextTheme.headlineSmall,
                     ),
                     SizedBox(
                       height: 6,
                     ),
                     Text(
                       widget.description,
-                      style: Theme.of(context).primaryTextTheme.bodyText1,
+                      style: Theme.of(context).primaryTextTheme.bodyLarge,
                     ),
                   ],
                 ),

@@ -52,7 +52,7 @@ class DropdownMenu<T> extends StatelessWidget {
         children: [
           Text(
             label,
-            style: labelStyle ?? Theme.of(context).textTheme.subtitle1,
+            style: labelStyle ?? Theme.of(context).textTheme.titleMedium,
           ),
           Container(
             color: menuItemBackground,
